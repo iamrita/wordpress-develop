@@ -16,6 +16,12 @@ jQuery( function( $ ) {
 		};
 	}
 
+	function setInputValue( input, value ) {
+		var nativeSet = Object.getOwnPropertyDescriptor( window.HTMLInputElement.prototype, 'value' ).set;
+		nativeSet.call( input, value );
+		input.dispatchEvent( new Event( 'input', { bubbles: true } ) );
+	}
+
 	function boot( assert, callback ) {
 		var done = assert.async();
 		var rootEl = document.createElement( 'div' );
@@ -46,6 +52,10 @@ jQuery( function( $ ) {
 
 	QUnit.module( 'application-passwords (react)', function( hooks ) {
 		hooks.beforeEach( function() {
+			// sinon-test fakes timers; React effects and our waits need real ones.
+			if ( this.clock && typeof this.clock.restore === 'function' ) {
+				this.clock.restore();
+			}
 			this.confirmStub = sinon.stub( window, 'confirm' ).returns( true );
 		} );
 
@@ -91,8 +101,7 @@ jQuery( function( $ ) {
 						actionCalls.push( { response: response, request: request } );
 					} );
 
-					rootEl.querySelector( '#new_application_password_name' ).value = 'CLI';
-					rootEl.querySelector( '#new_application_password_name' ).dispatchEvent( new Event( 'input', { bubbles: true } ) );
+					setInputValue( rootEl.querySelector( '#new_application_password_name' ), 'CLI' );
 					rootEl.querySelector( '#do_new_application_password' ).click();
 
 					setTimeout( function() {
@@ -126,8 +135,7 @@ jQuery( function( $ ) {
 				pending[0].resolve( [] );
 
 				setTimeout( function() {
-					rootEl.querySelector( '#new_application_password_name' ).value = 'Race';
-					rootEl.querySelector( '#new_application_password_name' ).dispatchEvent( new Event( 'input', { bubbles: true } ) );
+					setInputValue( rootEl.querySelector( '#new_application_password_name' ), 'Race' );
 					rootEl.querySelector( '#do_new_application_password' ).click();
 					rootEl.querySelector( '#do_new_application_password' ).click();
 
@@ -145,8 +153,7 @@ jQuery( function( $ ) {
 				pending[0].resolve( [] );
 
 				setTimeout( function() {
-					rootEl.querySelector( '#new_application_password_name' ).value = HOSTILE_NAME;
-					rootEl.querySelector( '#new_application_password_name' ).dispatchEvent( new Event( 'input', { bubbles: true } ) );
+					setInputValue( rootEl.querySelector( '#new_application_password_name' ), HOSTILE_NAME );
 					rootEl.querySelector( '#do_new_application_password' ).click();
 
 					setTimeout( function() {
@@ -168,8 +175,7 @@ jQuery( function( $ ) {
 				pending[0].resolve( [] );
 
 				setTimeout( function() {
-					rootEl.querySelector( '#new_application_password_name' ).value = 'Stay';
-					rootEl.querySelector( '#new_application_password_name' ).dispatchEvent( new Event( 'input', { bubbles: true } ) );
+					setInputValue( rootEl.querySelector( '#new_application_password_name' ), 'Stay' );
 					rootEl.querySelector( '#do_new_application_password' ).click();
 
 					setTimeout( function() {
