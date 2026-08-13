@@ -840,27 +840,34 @@ switch ( $action ) {
 								endif;
 								?>
 
+								<?php
+								// Select the renderer before the list table is constructed; it adds the columns filter.
+								$use_react_application_passwords_ui = wp_use_application_passwords_react_ui();
+								?>
+
 								<?php if ( ! wp_is_site_protected_by_basic_auth( 'front' ) ) : ?>
-									<div class="create-application-password form-wrap">
-										<div class="form-field">
-											<label for="new_application_password_name"><?php _e( 'New Application Password Name' ); ?></label>
-											<input type="text" size="30" id="new_application_password_name" name="new_application_password_name" class="input ltr" aria-required="true" aria-describedby="new_application_password_name_desc" spellcheck="false" />
-											<p class="description" id="new_application_password_name_desc"><?php _e( 'Required to create an Application Password, but not to update the user.' ); ?></p>
+									<?php if ( ! $use_react_application_passwords_ui ) : ?>
+										<div class="create-application-password form-wrap">
+											<div class="form-field">
+												<label for="new_application_password_name"><?php _e( 'New Application Password Name' ); ?></label>
+												<input type="text" size="30" id="new_application_password_name" name="new_application_password_name" class="input ltr" aria-required="true" aria-describedby="new_application_password_name_desc" spellcheck="false" />
+												<p class="description" id="new_application_password_name_desc"><?php _e( 'Required to create an Application Password, but not to update the user.' ); ?></p>
+											</div>
+
+											<?php
+											/**
+											 * Fires in the create Application Passwords form.
+											 *
+											 * @since 5.6.0
+											 *
+											 * @param WP_User $profile_user The current WP_User object.
+											 */
+											do_action( 'wp_create_application_password_form', $profile_user );
+											?>
+
+											<button type="button" name="do_new_application_password" id="do_new_application_password" class="button button-secondary"><?php _e( 'Add Application Password' ); ?></button>
 										</div>
-
-										<?php
-										/**
-										 * Fires in the create Application Passwords form.
-										 *
-										 * @since 5.6.0
-										 *
-										 * @param WP_User $profile_user The current WP_User object.
-										 */
-										do_action( 'wp_create_application_password_form', $profile_user );
-										?>
-
-										<button type="button" name="do_new_application_password" id="do_new_application_password" class="button button-secondary"><?php _e( 'Add Application Password' ); ?></button>
-									</div>
+									<?php endif; ?>
 									<?php
 								else :
 									wp_admin_notice(
@@ -873,13 +880,17 @@ switch ( $action ) {
 								endif;
 								?>
 
-								<div class="application-passwords-list-table-wrapper">
-									<?php
-									$application_passwords_list_table = _get_list_table( 'WP_Application_Passwords_List_Table', array( 'screen' => 'application-passwords-user' ) );
-									$application_passwords_list_table->prepare_items();
-									$application_passwords_list_table->display();
-									?>
-								</div>
+								<?php if ( $use_react_application_passwords_ui ) : ?>
+									<?php wp_print_application_passwords_react_mount( $user_id ); ?>
+								<?php else : ?>
+									<div class="application-passwords-list-table-wrapper">
+										<?php
+										$application_passwords_list_table = _get_list_table( 'WP_Application_Passwords_List_Table', array( 'screen' => 'application-passwords-user' ) );
+										$application_passwords_list_table->prepare_items();
+										$application_passwords_list_table->display();
+										?>
+									</div>
+								<?php endif; ?>
 							<?php elseif ( ! wp_is_application_passwords_supported() ) : ?>
 								<p><?php _e( 'The application password feature requires HTTPS, which is not enabled on this site.' ); ?></p>
 								<p>

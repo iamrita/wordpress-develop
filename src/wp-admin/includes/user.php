@@ -750,3 +750,101 @@ function wp_is_authorize_application_redirect_url_valid( $url ) {
 
 	return true;
 }
+
+/**
+ * Extension hooks that force the legacy Application Passwords renderer.
+ *
+ * These must be inspected before `WP_Application_Passwords_List_Table` is
+ * instantiated. The list table constructor adds `manage_{$screen}_columns`.
+ *
+ * @since 7.2.0
+ *
+ * @return string[] Hook names.
+ */
+function wp_get_application_passwords_legacy_ui_hooks() {
+	return array(
+		'wp_create_application_password_form',
+		'manage_application-passwords-user_columns',
+		'manage_application-passwords-user_custom_column',
+		'manage_application-passwords-user_custom_column_js_template',
+	);
+}
+
+/**
+ * Determines whether the Application Passwords React renderer should be used.
+ *
+ * Defaults to React for unextended installs. Returning false from
+ * {@see 'wp_use_application_passwords_react_ui'} forces the legacy UI.
+ * Any callback on a documented form or column extension hook also forces
+ * the legacy renderer. Query-string parameters are ignored.
+ *
+ * @since 7.2.0
+ *
+ * @return bool True when the React island should mount.
+ */
+function wp_use_application_passwords_react_ui() {
+	/**
+	 * Filters whether to use the React Application Passwords UI.
+	 *
+	 * Returning false forces the legacy form, list table, and Underscore templates.
+	 *
+	 * @since 7.2.0
+	 *
+	 * @param bool $use_react Whether to use the React renderer. Default true.
+	 */
+	$use_react = apply_filters( 'wp_use_application_passwords_react_ui', true );
+
+	if ( ! $use_react ) {
+		return false;
+	}
+
+	foreach ( wp_get_application_passwords_legacy_ui_hooks() as $hook ) {
+		if ( has_filter( $hook ) ) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
+ * Returns the non-secret Application Passwords UI boot configuration.
+ *
+ * Contains only the immutable target user ID, selected renderer, and
+ * presentation flags. No nonce, password, or credential list.
+ *
+ * @since 7.2.0
+ *
+ * @param int $user_id User ID the UI is managing.
+ * @return array {
+ *     @type int    $userId    Target user ID from PHP.
+ *     @type string $renderer  `react` or `legacy`.
+ *     @type bool   $canCreate Whether the create form may be shown.
+ * }
+ */
+function wp_get_application_passwords_ui_boot_config( $user_id ) {
+	return array(
+		'userId'    => (int) $user_id,
+		'renderer'  => wp_use_application_passwords_react_ui() ? 'react' : 'legacy',
+		'canCreate' => ! wp_is_site_protected_by_basic_auth( 'front' ),
+	);
+}
+
+/**
+ * Prints the React mount node and non-secret boot config.
+ *
+ * @since 7.2.0
+ *
+ * @param int $user_id User ID the UI is managing.
+ */
+function wp_print_application_passwords_react_mount( $user_id ) {
+	$config = wp_get_application_passwords_ui_boot_config( $user_id );
+
+	echo '<div id="application-passwords-root" class="application-passwords-react"></div>';
+
+	wp_add_inline_script(
+		'application-passwords',
+		'var wpApplicationPasswordsSettings = ' . wp_json_encode( $config ) . ';',
+		'before'
+	);
+}
