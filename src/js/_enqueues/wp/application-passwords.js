@@ -488,7 +488,9 @@
 			return null;
 		}
 		var root = createRoot( target );
-		root.render( el( ApplicationPasswordsApp, { settings: settings } ) );
+		wp.element.flushSync( function() {
+			root.render( el( ApplicationPasswordsApp, { settings: settings } ) );
+		} );
 		return root;
 	}
 
