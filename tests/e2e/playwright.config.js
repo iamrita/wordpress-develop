@@ -22,6 +22,21 @@ const config = defineConfig( {
 		...baseConfig.webServer,
 		command: 'npm run env:start',
 	},
+	use: {
+		...baseConfig.use,
+		video: 'off',
+	},
+	projects: ( baseConfig.projects || [ { name: 'chromium', use: {} } ] ).map(
+		( project ) => ( {
+			...project,
+			use: {
+				...project.use,
+				// Match tests/qunit/playwright.config.js so CI can use the system Chrome channel.
+				channel: process.env.CI ? 'chrome' : project.use?.channel,
+				video: 'off',
+			},
+		} )
+	),
 } );
 
 export default config;
