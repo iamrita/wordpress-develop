@@ -115,14 +115,16 @@ test.describe( 'Manage applications passwords', () => {
 		await applicationPasswords.create( HOSTILE_APPLICATION_NAME );
 
 		const successMessage = page.getByRole( 'alert' );
-		await expect( successMessage ).toContainText( HOSTILE_APPLICATION_NAME );
+		// Core sanitizes the stored name; the client must still not execute markup.
+		await expect( successMessage ).toContainText( 'Hostile App' );
 		await expect( successMessage.locator( 'img' ) ).toHaveCount( 0 );
 		expect(
 			await page.evaluate( () => window.__appPassXss )
 		).toBeUndefined();
 
 		const [ app ] = await applicationPasswords.get();
-		expect( app.name ).toBe( HOSTILE_APPLICATION_NAME );
+		expect( app.name.includes( 'Hostile App' ) ).toBe( true );
+		expect( app.name.includes( '<img' ) ).toBe( false );
 	} );
 
 	test( 'should show a text error when create fails', async ( {
@@ -206,10 +208,8 @@ test.describe( 'Manage applications passwords', () => {
 		page,
 		applicationPasswords,
 	} ) => {
-		await applicationPasswords.create();
-
 		await page.route(
-			'**/wp-json/wp/v2/users/**/application-passwords/**',
+			( url ) => String( url ).includes( 'application-passwords' ),
 			async ( route ) => {
 				if ( route.request().method() === 'DELETE' ) {
 					await route.fulfill( {
@@ -225,6 +225,8 @@ test.describe( 'Manage applications passwords', () => {
 				await route.continue();
 			}
 		);
+
+		await applicationPasswords.create();
 
 		page.on( 'dialog', ( dialog ) => dialog.accept() );
 		await page
