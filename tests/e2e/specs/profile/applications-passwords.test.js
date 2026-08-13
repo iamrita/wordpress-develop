@@ -209,10 +209,12 @@ test.describe( 'Manage applications passwords', () => {
 		applicationPasswords,
 	} ) => {
 		await applicationPasswords.visit();
+		// wp.apiRequest sends DELETE as POST + X-HTTP-Method-Override (api-request.js).
 		await page.route(
-			'**/wp-json/wp/v2/users/**/application-passwords**',
+			'**/wp-json/wp/v2/users/**/application-passwords/**',
 			async ( route ) => {
-				if ( route.request().method() === 'DELETE' ) {
+				const override = route.request().headers()[ 'x-http-method-override' ];
+				if ( override === 'DELETE' || route.request().method() === 'DELETE' ) {
 					await route.fulfill( {
 						status: 500,
 						contentType: 'application/json',
