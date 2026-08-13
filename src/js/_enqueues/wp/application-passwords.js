@@ -3,6 +3,7 @@
  *
  * Synced-package shape for `@wordpress/application-passwords`.
  * Uses only wp-element, wp-api-fetch, wp-date, wp-i18n, and wp-hooks.
+ * Grunt copies this file to wp-includes/js/dist/application-passwords.js.
  *
  * @output wp-includes/js/dist/application-passwords.js
  */
@@ -17,7 +18,6 @@
 	var useEffect = wp.element.useEffect;
 	var useRef = wp.element.useRef;
 	var Fragment = wp.element.Fragment;
-	var apiFetch = wp.apiFetch;
 	var __ = wp.i18n.__;
 	var sprintf = wp.i18n.sprintf;
 	var dateI18n = wp.date && wp.date.dateI18n ? wp.date.dateI18n : function() {
@@ -187,7 +187,7 @@
 		useEffect(
 			function() {
 				var cancelled = false;
-				apiFetch( { path: collectionPath( userId ) } )
+				wp.apiFetch( { path: collectionPath( userId ) } )
 					.then( function( response ) {
 						if ( cancelled ) {
 							return;
@@ -256,7 +256,7 @@
 			var request = { name: trimmed };
 			request = wp.hooks.applyFilters( 'wp_application_passwords_new_password_request', request, userId );
 
-			apiFetch( {
+			wp.apiFetch( {
 				path: collectionPath( userId ),
 				method: 'POST',
 				data: request
@@ -298,7 +298,7 @@
 			setNotice( null );
 			clearSecret();
 
-			apiFetch( {
+			wp.apiFetch( {
 				path: itemPath( userId, uuid ),
 				method: 'DELETE'
 			} )
@@ -335,7 +335,7 @@
 			setNotice( null );
 			clearSecret();
 
-			apiFetch( {
+			wp.apiFetch( {
 				path: collectionPath( userId ),
 				method: 'DELETE'
 			} )
