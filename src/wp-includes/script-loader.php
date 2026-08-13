@@ -1515,6 +1515,15 @@ function wp_default_scripts( $scripts ) {
 		$scripts->add( 'media', "/wp-admin/js/media$suffix.js", array( 'jquery', 'clipboard', 'wp-i18n', 'wp-a11y' ), false, 1 );
 		$scripts->set_translations( 'media' );
 
+		$scripts->add(
+			'media-library-dataviews',
+			"/wp-admin/js/media-library-dataviews$suffix.js",
+			array( 'wp-element', 'wp-components', 'wp-data', 'wp-core-data', 'wp-api-fetch', 'wp-i18n', 'wp-url', 'wp-dom-ready' ),
+			false,
+			1
+		);
+		$scripts->set_translations( 'media-library-dataviews' );
+
 		$scripts->add( 'image-edit', "/wp-admin/js/image-edit$suffix.js", array( 'jquery', 'jquery-ui-core', 'imgareaselect', 'wp-a11y' ), false, 1 );
 		$scripts->set_translations( 'image-edit' );
 
