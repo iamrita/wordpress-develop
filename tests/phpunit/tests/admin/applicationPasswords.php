@@ -206,8 +206,14 @@ class WP_Test_Application_Passwords_React_UI extends WP_UnitTestCase {
 		$registered = $scripts->query( 'application-passwords', 'registered' );
 
 		$this->assertNotFalse( $registered );
-		foreach ( array( 'jquery', 'wp-util', 'wp-api-request', 'wp-date', 'wp-i18n', 'wp-hooks', 'wp-element', 'wp-api-fetch' ) as $dep ) {
+		foreach ( array( 'jquery', 'wp-util', 'wp-api-request', 'wp-date', 'wp-i18n', 'wp-hooks', 'wp-element', 'wp-api-fetch', 'wp-application-passwords' ) as $dep ) {
 			$this->assertContains( $dep, $registered->deps, $dep . ' must remain a dependency during dual-path support.' );
+		}
+
+		$package = $scripts->query( 'wp-application-passwords', 'registered' );
+		$this->assertNotFalse( $package );
+		foreach ( array( 'wp-element', 'wp-api-fetch', 'wp-date', 'wp-i18n', 'wp-hooks' ) as $dep ) {
+			$this->assertContains( $dep, $package->deps, $dep . ' must be a dependency of the synced package.' );
 		}
 	}
 

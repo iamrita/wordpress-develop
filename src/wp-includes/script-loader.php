@@ -1242,7 +1242,10 @@ function wp_default_scripts( $scripts ) {
 	$scripts->add( 'password-toggle', "/wp-admin/js/password-toggle$suffix.js", array(), false, 1 );
 	$scripts->set_translations( 'password-toggle' );
 
-	$scripts->add( 'application-passwords', "/wp-admin/js/application-passwords$suffix.js", array( 'jquery', 'wp-util', 'wp-api-request', 'wp-date', 'wp-i18n', 'wp-hooks', 'wp-element', 'wp-api-fetch' ), false, 1 );
+	$scripts->add( 'wp-application-passwords', '/wp-includes/js/dist/application-passwords.js', array( 'wp-element', 'wp-api-fetch', 'wp-date', 'wp-i18n', 'wp-hooks' ), false, 1 );
+	$scripts->set_translations( 'wp-application-passwords' );
+
+	$scripts->add( 'application-passwords', "/wp-admin/js/application-passwords$suffix.js", array( 'jquery', 'wp-util', 'wp-api-request', 'wp-date', 'wp-i18n', 'wp-hooks', 'wp-element', 'wp-api-fetch', 'wp-application-passwords' ), false, 1 );
 	$scripts->set_translations( 'application-passwords' );
 
 	$scripts->add( 'auth-app', "/wp-admin/js/auth-app$suffix.js", array( 'jquery', 'wp-api-request', 'wp-i18n', 'wp-hooks' ), false, 1 );

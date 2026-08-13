@@ -3,6 +3,15 @@
  */
 
 ( function( $ ) {
+	function initReact() {
+		var root = document.getElementById( 'application-passwords-root' );
+		if ( ! root || ! wp.applicationPasswords || ! wp.applicationPasswords.initialize ) {
+			return;
+		}
+		wp.applicationPasswords.initialize( root, window.wpApplicationPasswordsSettings );
+	}
+
+	function initLegacy() {
 	var $appPassSection = $( '#application-passwords-section' ),
 		$newAppPassForm = $appPassSection.find( '.create-application-password' ),
 		$newAppPassField = $newAppPassForm.find( '.input' ),
@@ -215,5 +224,12 @@
 	 */
 	function clearNotices() {
 		$( '.notice', $appPassSection ).remove();
+	}
+	}
+
+	if ( window.wpApplicationPasswordsSettings && 'react' === window.wpApplicationPasswordsSettings.renderer ) {
+		initReact();
+	} else {
+		initLegacy();
 	}
 }( jQuery ) );
