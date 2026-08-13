@@ -138,9 +138,9 @@ if ( isset( $_GET['mode'] ) && in_array( $_GET['mode'], $modes, true ) ) {
 }
 
 if ( 'grid' === $mode ) {
-	wp_enqueue_media();
-	wp_enqueue_script( 'media-grid' );
-	wp_enqueue_script( 'media' );
+	// The grid view is a React/DataViews application built on the wp.* runtime packages.
+	wp_enqueue_script( 'media-library-dataviews' );
+	wp_enqueue_style( 'wp-components' );
 
 	// Remove the error parameter added by deprecation of wp-admin/media.php.
 	add_filter(
@@ -165,12 +165,43 @@ if ( 'grid' === $mode ) {
 	}
 
 	wp_localize_script(
-		'media-grid',
-		'_wpMediaGridSettings',
+		'media-library-dataviews',
+		'_wpMediaLibraryDataViews',
 		array(
-			'adminUrl'  => parse_url( self_admin_url(), PHP_URL_PATH ),
-			'queryVars' => (object) $query_vars,
+			'adminUrl'      => parse_url( self_admin_url(), PHP_URL_PATH ),
+			'editBaseUrl'   => admin_url( 'post.php' ),
+			'canDelete'     => current_user_can( 'delete_posts' ),
+			'perPage'       => 40,
+			'initialSearch' => isset( $_GET['s'] ) ? wp_unslash( $_GET['s'] ) : '',
+			'initialView'   => 'grid',
+			'queryVars'     => (object) $query_vars,
 		)
+	);
+
+	// Minimal layout styles for the DataViews media grid.
+	wp_add_inline_style(
+		'wp-components',
+		'.media-dataviews__toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin:16px 0}' .
+		'.media-dataviews__filters{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}' .
+		'.media-dataviews__filters .components-base-control{margin-bottom:0}' .
+		'.media-dataviews__layout-switch{display:flex;gap:4px}' .
+		'.media-dataviews__bulk{display:flex;align-items:center;gap:12px;padding:8px 12px;margin-bottom:12px;background:#f0f6fc;border:1px solid #c3c4c7;border-radius:4px}' .
+		'.media-dataviews__loading{display:flex;justify-content:center;padding:48px}' .
+		'.media-dataviews__empty{padding:48px;text-align:center;color:#646970}' .
+		'.media-dataviews__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin:0;padding:0;list-style:none}' .
+		'.media-dataviews__grid-item{margin:0;border:1px solid #dcdcde;border-radius:4px;overflow:hidden;background:#fff}' .
+		'.media-dataviews__grid-item.is-selected{outline:2px solid #2271b1;outline-offset:-2px}' .
+		'.media-dataviews__grid-thumb{position:relative;aspect-ratio:1;background:#f0f0f1;display:flex;align-items:center;justify-content:center}' .
+		'.media-dataviews__grid-thumb .media-dataviews__select{position:absolute;top:6px;left:6px;z-index:1;background:#fff;border-radius:2px;padding:2px}' .
+		'.media-dataviews__thumb-img{width:100%;height:100%;object-fit:cover}' .
+		'.media-dataviews__thumb-placeholder{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#646970;font-size:11px;word-break:break-all;padding:8px;text-align:center}' .
+		'.media-dataviews__grid-meta{padding:8px 10px;display:flex;flex-direction:column;gap:2px}' .
+		'.media-dataviews__title{font-weight:600;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' .
+		'.media-dataviews__subtle,.media-dataviews__page-info{color:#646970;font-size:12px}' .
+		'.media-dataviews__table .media-dataviews__file-cell{display:flex;align-items:center;gap:10px}' .
+		'.media-dataviews__table-thumb{display:inline-flex;width:40px;height:40px;flex:0 0 40px}' .
+		'.media-dataviews__table-thumb .media-dataviews__thumb-img{width:40px;height:40px}' .
+		'.media-dataviews__pagination{display:flex;align-items:center;justify-content:center;gap:16px;margin:24px 0}'
 	);
 
 	get_current_screen()->add_help_tab(
@@ -244,6 +275,8 @@ if ( 'grid' === $mode ) {
 			)
 		);
 		?>
+
+		<div id="wp-media-grid-app" class="media-dataviews-app"></div>
 	</div>
 	<?php
 	require_once ABSPATH . 'wp-admin/admin-footer.php';
