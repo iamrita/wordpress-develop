@@ -208,8 +208,9 @@ test.describe( 'Manage applications passwords', () => {
 		page,
 		applicationPasswords,
 	} ) => {
+		await applicationPasswords.visit();
 		await page.route(
-			( url ) => String( url ).includes( 'application-passwords' ),
+			'**/wp-json/wp/v2/users/**/application-passwords**',
 			async ( route ) => {
 				if ( route.request().method() === 'DELETE' ) {
 					await route.fulfill( {
@@ -226,7 +227,12 @@ test.describe( 'Manage applications passwords', () => {
 			}
 		);
 
-		await applicationPasswords.create();
+		const newPasswordField = page.getByRole( 'textbox', {
+			name: 'New Application Password Name',
+		} );
+		await newPasswordField.fill( TEST_APPLICATION_NAME );
+		await page.getByRole( 'button', { name: 'Add Application Password' } ).click();
+		await expect( page.getByRole( 'alert' ) ).toBeVisible();
 
 		page.on( 'dialog', ( dialog ) => dialog.accept() );
 		await page
